@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 
-from .time_travel_util import TimeTravelLoop
+from ..time_travel_util import TimeTravelLoop
 
 
 def run_until_timeout(cor,loop,timeout=None):
