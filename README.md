@@ -1,6 +1,9 @@
 Asyncio Time Travel Loop
 ========================
 
+Intro
+-----
+
 Asyncio Time Travel Loop allows you to test asyncio code that waits or sleeps,
 without actually waiting or sleeping.
 
@@ -81,3 +84,42 @@ def test_time_travel_loop_concurrent_sleep():
 
         assert res_list == [0,2,4,1,3]
 ```
+
+Tests
+-----
+
+Run: 
+```bash
+py.test
+```
+
+How does this work?
+-------------------
+
+TimeTravelLoop source is based on the source code of
+asyncio.test_utils.TestLoop.
+
+For each _run_once iteration of the loop, the following is done:
+- Loop events are executed.
+- Time is advanced to the closest scheduled event.
+
+Using this method your code never waits, and at the same time the events
+execute in the correct order.
+
+
+Limitations
+-----------
+
+TimeTravelLoop is meant to be used with your tests, not for production code. In
+particular, if your loop interacts with external events, bending time is not a
+good idea (Time will advance differently outside of your loop).
+
+
+Further work
+------------
+
+- The code might have bugs. If you find any issues, don't hesitate to fork or
+open an issue. 
+
+- It might also be possible to integrate this code into asyncio.test_utils in
+  some way.
