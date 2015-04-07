@@ -33,6 +33,8 @@ tloop.run_until_complete(inner_cor())
 
 This code completes immediately.
 
+See some of the [tests](https://github.com/realcr/asyncio_time_travel/blob/master/asyncio_time_travel/tests/test_time_travel_loop.py) for more advanced examples of what TimeTravelLoop can do.
+
 Installation
 ------------
 Run:
