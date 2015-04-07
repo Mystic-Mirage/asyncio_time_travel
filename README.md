@@ -39,6 +39,7 @@ Run:
 ```bash
 pip install --pre asyncio-time-travel
 ```
+You can also find the package at https://pypi.python.org/pypi/asyncio-time-travel .
 
 Tests
 -----
