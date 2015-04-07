@@ -1,4 +1,4 @@
-from time_travel_util import TimeTravelLoop
+from .time_travel_util import TimeTravelLoop
 
 # Export the TimeTravelLoop class:
 __all__ = (TimeTravelLoop)
