@@ -3,9 +3,10 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
+import sys
 
 # Get the version 
-from .asyncio_time_travel.version import version
+from asyncio_time_travel.version import version
 
 here = path.abspath(path.dirname(__file__))
 
