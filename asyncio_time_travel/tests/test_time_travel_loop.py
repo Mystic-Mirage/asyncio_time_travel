@@ -89,3 +89,75 @@ def test_time_travel_loop_concurrent_sleep():
 
     assert res_list == [0,2,4,1,3]
 
+
+def test_time_travel_loop_complex_order():
+    """
+    Build different points in time using coroutines that yield to other
+    coroutines and asyncio.sleep. Make sure that the events are in the expected
+    order.
+    """
+
+    # results list:
+    res_list = []
+
+    # List of async_tasks to wait for.
+    async_tasks = []
+
+    def add_res(res):
+        """Add a result"""
+        res_list.append(res)
+
+    tloop = TimeTravelLoop()
+
+    @asyncio.coroutine
+    def inner_cor():
+        print('hello')
+        add_res(0)
+
+        # Start cor_a:
+        task = asyncio.async(cor_a(),loop=tloop)        # time=0
+
+        asyncio.async(asyncio.sleep(delay=500,loop=tloop),loop=tloop)\
+            .add_done_callback(lambda x:add_res(2))     # time=0 --> 500
+
+        asyncio.async(asyncio.sleep(delay=1500,loop=tloop),loop=tloop)\
+            .add_done_callback(lambda x:add_res(4))     # time=0  --> 1500
+
+        # Wait for the longest task to complete:
+        yield from asyncio.wait_for(task,timeout=None,loop=tloop)
+
+
+    @asyncio.coroutine
+    def cor_a():
+        add_res(1)                          # time=0
+        yield from asyncio.sleep(1000,loop=tloop)      
+        yield from cor_b()                  # time=1000
+
+    @asyncio.coroutine
+    def cor_b():
+        add_res(3)                          # time=1000
+        yield from asyncio.sleep(1000,loop=tloop)
+        add_res(5)                          # time=2000
+        asyncio.async(asyncio.sleep(delay=500,loop=tloop),loop=tloop)\
+            .add_done_callback(lambda x:add_res(8))     # time=2000 --> 2500
+        yield from cor_c()
+
+
+    @asyncio.coroutine
+    def cor_c():
+        add_res(6)                          # time=2000
+        yield from cor_d()
+        yield from asyncio.sleep(1000,loop=tloop)      
+        add_res(9)                          # time=3000
+
+    @asyncio.coroutine
+    def cor_d():
+        add_res(7)                          # time=2000
+
+    # Expected time for running:
+    total_time = (3000) + 1
+
+    run_until_timeout(inner_cor(),loop=tloop,timeout=total_time)
+    tloop.close()
+
+    assert res_list == [0,1,2,3,4,5,6,7,8,9]
