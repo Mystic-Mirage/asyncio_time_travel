@@ -80,5 +80,5 @@ Further work
 - The code might have bugs. If you find any issues, don't hesitate to fork or
 open an issue. 
 
-- It might also be possible to integrate this code into asyncio.test_utils in
-  some way.
+- It might be possible to integrate this code into asyncio.test_utils in some
+  way.
