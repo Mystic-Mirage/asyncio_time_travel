@@ -43,12 +43,12 @@ pip install --pre asyncio-time-travel
 Tests
 -----
 
-Run: 
+Run (Inside asyncio_time_travel dir):
 ```bash
 py.test
 ```
 
-If you don't know about [py.test](http://pytest.org), it's your lucky day :)
+If you haven't yet heard of [py.test](http://pytest.org), it's your lucky day :)
 
 
 How does this work?
