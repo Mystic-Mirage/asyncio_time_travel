@@ -33,7 +33,7 @@ setup(
     url='https://github.com/realcr/asyncio_time_travel',
 
     # Author details
-    author='realcr',
+    author='real',
     author_email='realcr@gmail.com',
 
     # Choose your license
