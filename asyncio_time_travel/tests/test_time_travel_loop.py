@@ -111,7 +111,6 @@ def test_time_travel_loop_complex_order():
 
     @asyncio.coroutine
     def inner_cor():
-        print('hello')
         add_res(0)
 
         # Start cor_a:
