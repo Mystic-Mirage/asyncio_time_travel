@@ -1,4 +1,4 @@
-from asyncio import base_events,selectors
+from asyncio import base_events
 from asyncio.test_utils import TestSelector
 import collections
 import heapq
@@ -69,7 +69,7 @@ class TimeTravelLoop(base_events.BaseEventLoop):
             self._time += advance
 
     def add_reader(self, fd, callback, *args):
-        self.readers[fd] = events.Handle(callback, args, self)
+        self.readers[fd] = (callback, args)
 
     def remove_reader(self, fd):
         self.remove_reader_count[fd] += 1
@@ -82,13 +82,13 @@ class TimeTravelLoop(base_events.BaseEventLoop):
     def assert_reader(self, fd, callback, *args):
         assert fd in self.readers, 'fd {} is not registered'.format(fd)
         handle = self.readers[fd]
-        assert handle._callback == callback, '{!r} != {!r}'.format(
-            handle._callback, callback)
-        assert handle._args == args, '{!r} != {!r}'.format(
-            handle._args, args)
+        assert handle[0] == callback, '{!r} != {!r}'.format(
+            handle[0], callback)
+        assert handle[1] == args, '{!r} != {!r}'.format(
+            handle[1], args)
 
     def add_writer(self, fd, callback, *args):
-        self.writers[fd] = events.Handle(callback, args, self)
+        self.writers[fd] = (callback, args)
 
     def remove_writer(self, fd):
         self.remove_writer_count[fd] += 1
@@ -101,17 +101,28 @@ class TimeTravelLoop(base_events.BaseEventLoop):
     def assert_writer(self, fd, callback, *args):
         assert fd in self.writers, 'fd {} is not registered'.format(fd)
         handle = self.writers[fd]
-        assert handle._callback == callback, '{!r} != {!r}'.format(
-            handle._callback, callback)
-        assert handle._args == args, '{!r} != {!r}'.format(
-            handle._args, args)
+        assert handle[0] == callback, '{!r} != {!r}'.format(
+            handle[0], callback)
+        assert handle[1] == args, '{!r} != {!r}'.format(
+            handle[1], args)
 
     def reset_counters(self):
         self.remove_reader_count = collections.defaultdict(int)
         self.remove_writer_count = collections.defaultdict(int)
 
     def _run_once(self):
+        # check if a mocked reader is ready
+        for fd, reader in self.readers.items():
+            if hasattr(fd, "ready") and fd.ready():
+                self.call_soon(reader[0], *reader[1])
+
+        # check if a mocked writer is ready
+        for fd, writer in self.writers.items():
+            if hasattr(fd, "ready") and fd.ready():
+                self.call_soon(writer[0], *writer[1])
+
         super()._run_once()
+
         # Advance time only when we finished everything at the present:
         if len(self._ready) == 0:
             if not self._timers.is_empty():
@@ -123,6 +134,7 @@ class TimeTravelLoop(base_events.BaseEventLoop):
         return super().call_at(when, callback, *args)
 
     def _process_events(self, event_list):
+        del event_list
         return
 
     def _write_to_self(self):
