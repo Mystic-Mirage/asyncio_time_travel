@@ -1,6 +1,11 @@
 import pytest
 import asyncio
 
+try:
+    from asyncio.exceptions import TimeoutError
+except ImportError:
+    from asyncio.futures import TimeoutError
+
 from ..time_travel_util import TimeTravelLoop
 
 
@@ -23,10 +28,9 @@ def test_time_travel_loop_basic_timeout():
 
     tloop = TimeTravelLoop()
 
-    @asyncio.coroutine
-    def inner_cor():
+    async def inner_cor():
         for i in range(NUM_SLEEPS):
-            yield from asyncio.sleep(SLEEP_TIME,loop=tloop)
+            await asyncio.sleep(SLEEP_TIME,loop=tloop)
 
     # Expected time for running:
     total_time = SLEEP_TIME * NUM_SLEEPS
@@ -38,7 +42,7 @@ def test_time_travel_loop_basic_timeout():
     run_until_timeout(\
             inner_cor(),loop=tloop,timeout=total_time + 1)
 
-    with pytest.raises(asyncio.futures.TimeoutError):
+    with pytest.raises(TimeoutError):
         run_until_timeout(inner_cor(),loop=tloop,timeout=total_time - 1)
     tloop.close()
 
@@ -61,15 +65,14 @@ def test_time_travel_loop_concurrent_sleep():
 
     tloop = TimeTravelLoop()
 
-    @asyncio.coroutine
-    def inner_cor():
+    async def inner_cor():
         # Add result 0:
         add_res(0)
 
-        task1 = asyncio.async(asyncio.sleep(delay=SLEEP_TIME*3,loop=tloop),loop=tloop)
-        task2 = asyncio.async(asyncio.sleep(delay=SLEEP_TIME*1,loop=tloop),loop=tloop)
-        task3 = asyncio.async(asyncio.sleep(delay=SLEEP_TIME*4,loop=tloop),loop=tloop)
-        task4 = asyncio.async(asyncio.sleep(delay=SLEEP_TIME*2,loop=tloop),loop=tloop)
+        task1 = asyncio.ensure_future(asyncio.sleep(delay=SLEEP_TIME*3,loop=tloop),loop=tloop)
+        task2 = asyncio.ensure_future(asyncio.sleep(delay=SLEEP_TIME*1,loop=tloop),loop=tloop)
+        task3 = asyncio.ensure_future(asyncio.sleep(delay=SLEEP_TIME*4,loop=tloop),loop=tloop)
+        task4 = asyncio.ensure_future(asyncio.sleep(delay=SLEEP_TIME*2,loop=tloop),loop=tloop)
 
         task1.add_done_callback(lambda x:add_res(1))
         task2.add_done_callback(lambda x:add_res(2))
@@ -79,7 +82,7 @@ def test_time_travel_loop_concurrent_sleep():
         tasks = [task1,task2,task3,task4]
 
         # Wait for all the tasks to complete:
-        yield from asyncio.wait(tasks,loop=tloop,timeout=None)
+        await asyncio.wait(tasks,loop=tloop,timeout=None)
 
     # Expected time for running:
     total_time = (SLEEP_TIME * 4) + 1
@@ -109,48 +112,43 @@ def test_time_travel_loop_complex_order():
 
     tloop = TimeTravelLoop()
 
-    @asyncio.coroutine
-    def inner_cor():
+    async def inner_cor():
         add_res(0)
 
         # Start cor_a:
-        task = asyncio.async(cor_a(),loop=tloop)        # time=0
+        task = asyncio.ensure_future(cor_a(),loop=tloop)        # time=0
 
-        asyncio.async(asyncio.sleep(delay=500,loop=tloop),loop=tloop)\
+        asyncio.ensure_future(asyncio.sleep(delay=500,loop=tloop),loop=tloop)\
             .add_done_callback(lambda x:add_res(2))     # time=0 --> 500
 
-        asyncio.async(asyncio.sleep(delay=1500,loop=tloop),loop=tloop)\
+        asyncio.ensure_future(asyncio.sleep(delay=1500,loop=tloop),loop=tloop)\
             .add_done_callback(lambda x:add_res(4))     # time=0  --> 1500
 
         # Wait for the longest task to complete:
-        yield from asyncio.wait_for(task,timeout=None,loop=tloop)
+        await asyncio.wait_for(task,timeout=None,loop=tloop)
 
 
-    @asyncio.coroutine
-    def cor_a():
+    async def cor_a():
         add_res(1)                          # time=0
-        yield from asyncio.sleep(1000,loop=tloop)      
-        yield from cor_b()                  # time=1000
+        await asyncio.sleep(1000,loop=tloop)      
+        await cor_b()                  # time=1000
 
-    @asyncio.coroutine
-    def cor_b():
+    async def cor_b():
         add_res(3)                          # time=1000
-        yield from asyncio.sleep(1000,loop=tloop)
+        await asyncio.sleep(1000,loop=tloop)
         add_res(5)                          # time=2000
-        asyncio.async(asyncio.sleep(delay=500,loop=tloop),loop=tloop)\
+        asyncio.ensure_future(asyncio.sleep(delay=500,loop=tloop),loop=tloop)\
             .add_done_callback(lambda x:add_res(8))     # time=2000 --> 2500
-        yield from cor_c()
+        await cor_c()
 
 
-    @asyncio.coroutine
-    def cor_c():
+    async def cor_c():
         add_res(6)                          # time=2000
-        yield from cor_d()
-        yield from asyncio.sleep(1000,loop=tloop)      
+        await cor_d()
+        await asyncio.sleep(1000,loop=tloop)      
         add_res(9)                          # time=3000
 
-    @asyncio.coroutine
-    def cor_d():
+    async def cor_d():
         add_res(7)                          # time=2000
 
     # Expected time for running:
