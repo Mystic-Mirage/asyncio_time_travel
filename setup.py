@@ -15,8 +15,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 py_version = sys.version_info[:2]
-if py_version < (3,3):
-    raise Exception('asyncio_time_travel requires Python >= 3.3.')
+if py_version < (3, 5):
+    raise Exception('asyncio_time_travel requires Python >= 3.5.')
 
 setup(
     name='asyncio_time_travel',
@@ -56,7 +56,12 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
 
     keywords='asyncio testing time travel sleep',
@@ -64,9 +69,6 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=["contrib","docs",\
             "*.tests", "*.tests.*", "tests.*", "tests"]),
-    extras_require={
-            ':python_version=="3.3"': ['asyncio'],
-    },
 
     entry_points={
         'console_scripts': [

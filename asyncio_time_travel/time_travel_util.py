@@ -1,7 +1,11 @@
-from asyncio import base_events,selectors
-from asyncio.test_utils import TestSelector
 import collections
 import heapq
+from asyncio import base_events
+
+try:
+    from test.test_asyncio.utils import TestSelector
+except ImportError:
+    from asyncio.test_utils import TestSelector
 
 
 # A class to manage set of next events:
@@ -118,9 +122,9 @@ class TimeTravelLoop(base_events.BaseEventLoop):
                 self._time = self._timers.pop_closest()
                 # print('time:',self._time,'timers:',self._timers._timers_set)
 
-    def call_at(self, when, callback, *args):
+    def call_at(self, when, callback, *args, **kwargs):
         self._timers.add(when)
-        return super().call_at(when, callback, *args)
+        return super().call_at(when, callback, *args, **kwargs)
 
     def _process_events(self, event_list):
         return
