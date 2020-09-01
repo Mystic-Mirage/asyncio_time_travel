@@ -16,7 +16,7 @@ class NextTimers:
         # Timers heap. Used to get the closest timer event:
         self._timers_heap = []
 
-    def add(self,when):
+    def add(self, when):
         """
         Add a timer (Future event).
         """
@@ -27,23 +27,23 @@ class NextTimers:
         # Add to set:
         self._timers_set.add(when)
         # Add to heap:
-        heapq.heappush(self._timers_heap,when)
+        heapq.heappush(self._timers_heap, when)
 
     def is_empty(self):
-        return (len(self._timers_set) == 0)
-
+        return len(self._timers_set) == 0
 
     def pop_closest(self):
         """
         Get closest event timer. (The one that will happen the soonest).
         """
         if self.is_empty():
-            raise IndexError('NextTimers is empty')
+            raise IndexError("NextTimers is empty")
 
         when = heapq.heappop(self._timers_heap)
         self._timers_set.remove(when)
 
         return when
+
 
 # Based on TestLoop from asyncio.test_utils:
 class TimeTravelLoop(base_events.BaseEventLoop):
@@ -84,12 +84,12 @@ class TimeTravelLoop(base_events.BaseEventLoop):
             return False
 
     def assert_reader(self, fd, callback, *args):
-        assert fd in self.readers, 'fd {} is not registered'.format(fd)
+        assert fd in self.readers, "fd {} is not registered".format(fd)
         handle = self.readers[fd]
-        assert handle._callback == callback, '{!r} != {!r}'.format(
-            handle._callback, callback)
-        assert handle._args == args, '{!r} != {!r}'.format(
-            handle._args, args)
+        assert handle._callback == callback, "{!r} != {!r}".format(
+            handle._callback, callback
+        )
+        assert handle._args == args, "{!r} != {!r}".format(handle._args, args)
 
     def add_writer(self, fd, callback, *args):
         self.writers[fd] = events.Handle(callback, args, self)
@@ -103,12 +103,12 @@ class TimeTravelLoop(base_events.BaseEventLoop):
             return False
 
     def assert_writer(self, fd, callback, *args):
-        assert fd in self.writers, 'fd {} is not registered'.format(fd)
+        assert fd in self.writers, "fd {} is not registered".format(fd)
         handle = self.writers[fd]
-        assert handle._callback == callback, '{!r} != {!r}'.format(
-            handle._callback, callback)
-        assert handle._args == args, '{!r} != {!r}'.format(
-            handle._args, args)
+        assert handle._callback == callback, "{!r} != {!r}".format(
+            handle._callback, callback
+        )
+        assert handle._args == args, "{!r} != {!r}".format(handle._args, args)
 
     def reset_counters(self):
         self.remove_reader_count = collections.defaultdict(int)
