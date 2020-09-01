@@ -1,6 +1,6 @@
 import collections
 import heapq
-from asyncio import base_events
+from asyncio import base_events, events
 
 try:
     from test.test_asyncio.utils import TestSelector
