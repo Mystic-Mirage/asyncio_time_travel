@@ -23,12 +23,11 @@ SLEEP_TIME = 1000
 
 tloop = TimeTravelLoop()
 
-@asyncio.coroutine
-def inner_cor():
-        # Sleep for a long time:
-        yield from asyncio.sleep(SLEEP_TIME,loop=tloop)
+async def inner_coro():
+    # Sleep for a long time:
+    await asyncio.sleep(SLEEP_TIME, loop=tloop)
 
-tloop.run_until_complete(inner_cor())
+tloop.run_until_complete(inner_coro())
 ```
 
 This code completes immediately.
@@ -39,7 +38,7 @@ Installation
 ------------
 Run:
 ```bash
-pip install --pre asyncio-time-travel
+pip install asyncio-time-travel
 ```
 You can also find the package at https://pypi.python.org/pypi/asyncio-time-travel .
 
@@ -48,10 +47,10 @@ Tests
 
 Run (Inside asyncio_time_travel dir):
 ```bash
-py.test
+pytest
 ```
 
-If you haven't yet heard of [py.test](http://pytest.org), it's your lucky day :)
+If you haven't yet heard of [pytest](http://pytest.org), it's your lucky day :)
 
 
 How does this work?
