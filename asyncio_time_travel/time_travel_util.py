@@ -1,11 +1,7 @@
 import collections
 import heapq
+import selectors
 from asyncio import base_events, events
-
-try:
-    from test.test_asyncio.utils import TestSelector
-except ImportError:
-    from asyncio.test_utils import TestSelector
 
 
 # A class to manage set of next events:
@@ -43,6 +39,26 @@ class NextTimers:
         self._timers_set.remove(when)
 
         return when
+
+
+class TestSelector(selectors.BaseSelector):
+
+    def __init__(self):
+        self.keys = {}
+
+    def register(self, fileobj, events, data=None):
+        key = selectors.SelectorKey(fileobj, 0, events, data)
+        self.keys[fileobj] = key
+        return key
+
+    def unregister(self, fileobj):
+        return self.keys.pop(fileobj)
+
+    def select(self, timeout):
+        return []
+
+    def get_map(self):
+        return self.keys
 
 
 # Based on TestLoop from asyncio.test_utils:
