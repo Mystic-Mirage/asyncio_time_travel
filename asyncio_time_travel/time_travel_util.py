@@ -42,7 +42,6 @@ class NextTimers:
 
 
 class TestSelector(selectors.BaseSelector):
-
     def __init__(self):
         self.keys = {}
 
@@ -54,7 +53,7 @@ class TestSelector(selectors.BaseSelector):
     def unregister(self, fileobj):
         return self.keys.pop(fileobj)
 
-    def select(self, timeout):
+    def select(self, timeout=None):
         return []
 
     def get_map(self):
