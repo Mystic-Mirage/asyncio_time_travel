@@ -41,6 +41,7 @@ class NextTimers:
         return when
 
 
+# Based on TestSelector from asyncio.test_utils:
 class TestSelector(selectors.BaseSelector):
     def __init__(self):
         self.keys = {}
